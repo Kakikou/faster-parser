@@ -156,7 +156,6 @@ The library exposes a single, powerful function that handles all parsing scenari
 
 Dependencies are automatically downloaded and built from source using CMake FetchContent:
 - **GoogleTest v1.17.0** - Testing framework
-- **spdlog v1.15.3** - Logging library
 
 No manual installation required! Just build and the dependencies will be fetched automatically.
 
@@ -191,7 +190,6 @@ ctest --output-on-failure
 
 Benchmark dependencies are automatically downloaded and built from source:
 - **Google Benchmark v1.9.4** - Performance measurement framework
-- **spdlog v1.15.3** - Logging library
 
 ### Running
 
@@ -250,12 +248,12 @@ faster-parser/
 
 ### Key Features
 
-- ** Centralized Dependencies**: All FetchContent managed in `cmake/Dependencies.cmake`
-- ** Modular Structure**: Clear separation between header, implementation, tests, and benchmarks
-- ** Zero-Config**: No manual dependency installation required
-- ** Single Compilation**: SIMD code compiled once, fast linking, no template instantiation overhead
-- ** Comprehensive Testing**: Full test suite with GoogleTest
-- ** Performance Benchmarks**: Detailed benchmarks with Google Benchmark
+- **Centralized Dependencies**: All FetchContent managed in `cmake/Dependencies.cmake`
+- **Modular Structure**: Clear separation between header, implementation, tests, and benchmarks
+- **Zero-Config**: No manual dependency installation required
+- **Single Compilation**: SIMD code compiled once, fast linking, no template instantiation overhead
+- **Comprehensive Testing**: Full test suite with GoogleTest
+- **Performance Benchmarks**: Detailed benchmarks with Google Benchmark
 
 ## Optimizations
 
