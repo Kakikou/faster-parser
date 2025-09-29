@@ -13,7 +13,7 @@
 #include <vector>
 #include <iomanip>
 
-#include "parsers.h"
+#include <faster_parser/parsers.h>
 
 using namespace core::fast_float_parser;
 

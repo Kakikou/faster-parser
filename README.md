@@ -55,7 +55,7 @@ cmake .. -DBUILD_TESTS=OFF -DBUILD_BENCHMARKS=OFF
 ### Basic Usage
 
 ```cpp
-#include "parsers.h"
+#include "faster_parser/parsers.h"
 using namespace core::fast_float_parser;
 
 // High-performance parsing with SIMD optimizations
@@ -77,17 +77,20 @@ Add this to your `CMakeLists.txt`:
 cmake_minimum_required(VERSION 3.27)
 project(your_project)
 
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 include(FetchContent)
 FetchContent_Declare(
     faster_parser
-    GIT_REPOSITORY https://github.com/your-username/faster-parser.git
+    GIT_REPOSITORY https://github.com/Kakikou/faster-parser.git
     GIT_TAG main  # or specific version like v1.0.0
     GIT_SHALLOW ON
 )
 FetchContent_MakeAvailable(faster_parser)
 
 add_executable(your_app main.cpp)
-target_link_libraries(your_app PRIVATE faster_parser)
+target_link_libraries(your_app PRIVATE faster_parser::faster_parser)
 ```
 
 #### Method 2: Git Submodule
@@ -104,8 +107,10 @@ Then in your `CMakeLists.txt`:
 add_subdirectory(third-party/faster-parser)
 
 # Link with your target
-target_link_libraries(your_app PRIVATE faster_parser)
+target_link_libraries(your_app PRIVATE faster_parser::faster_parser)
 ```
+
+**Note**: When using `FetchContent` or as a subdirectory, tests and benchmarks are automatically disabled to speed up compilation.
 
 #### Method 3: System Installation
 
@@ -228,8 +233,9 @@ bm_fast_float_parser_fixed_8_decimals       21.8 ns
 ```
 faster-parser/
 ├── src/
-│   ├── parsers.h                          # Header declarations
-│   └── parsers.cpp                        # Implementation with SIMD optimizations
+│   └── faster_parser/
+│       ├── parsers.h                      # Header declarations
+│       └── parsers.cpp                    # Implementation with SIMD optimizations
 ├── tests/
 │   ├── CMakeLists.txt                     # Test configuration
 │   └── fast_float_parser_tests.cpp       # Test implementation
@@ -237,7 +243,7 @@ faster-parser/
 │   ├── CMakeLists.txt                     # Benchmark configuration
 │   └── float_parser_benchmark.cpp        # Benchmark implementation
 ├── cmake/
-│   └──  Dependencies.cmake                 # Centralized dependency management
+│   └── Dependencies.cmake                 # Centralized dependency management
 ├── example/
 │   ├── CMakeLists.txt                     # Usage example
 │   └── example.cpp                        # Example implementation

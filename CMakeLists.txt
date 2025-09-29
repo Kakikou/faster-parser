@@ -5,8 +5,14 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(BUILD_TESTS "Build tests" ON)
-option(BUILD_BENCHMARKS "Build benchmarks" ON)
+# Désactiver tests et benchmarks quand utilisé via FetchContent
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    option(BUILD_TESTS "Build tests" ON)
+    option(BUILD_BENCHMARKS "Build benchmarks" ON)
+else()
+    option(BUILD_TESTS "Build tests" OFF)
+    option(BUILD_BENCHMARKS "Build benchmarks" OFF)
+endif()
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -15,28 +21,26 @@ endif ()
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -march=native")
 
-# SIMD feature detection
 include(CheckCXXSourceRuns)
 
-# Function to test CPU feature support at runtime
 function(test_cpu_feature feature_name test_code flags result_var)
     set(CMAKE_REQUIRED_FLAGS "-O2 ${flags}")
     check_cxx_source_runs("${test_code}" ${result_var})
 endfunction()
 
-# Variables to store SIMD support results
 set(SIMD_FLAGS "")
 set(SIMD_DEFINITIONS "")
 
-# Create compiled library instead of header-only
-add_library(faster_parser src/parsers.cpp)
+add_library(faster_parser
+        src/faster_parser/parsers.cpp
+        src/faster_parser/parsers.h
+)
 target_include_directories(faster_parser PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-        $<INSTALL_INTERFACE:include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-# Set C++ standard for the library
-target_compile_features(faster_parser PUBLIC cxx_std_17)
+target_compile_features(faster_parser PUBLIC cxx_std_23)
 
 set_target_properties(faster_parser PROPERTIES
         VERSION ${PROJECT_VERSION}
@@ -147,7 +151,7 @@ endif ()
 
 include(GNUInstallDirs)
 
-install(FILES src/parsers.h
+install(FILES src/faster_parser/parsers.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         COMPONENT Development)
 

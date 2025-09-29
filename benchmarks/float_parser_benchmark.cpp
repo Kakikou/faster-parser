@@ -12,7 +12,7 @@
 #include <vector>
 #include <random>
 
-#include "parsers.h"
+#include <faster_parser/parsers.h>
 
 const std::vector<std::string> financial_price_samples = {
     "25.35190000",
