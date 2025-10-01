@@ -19,7 +19,13 @@ if (NOT CMAKE_BUILD_TYPE)
 endif ()
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -march=native")
+
+option(USE_NATIVE_ARCH "Use -march=native for native CPU optimizations (should be deactivated during docker build)" ON)
+if(USE_NATIVE_ARCH)
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -march=native")
+else()
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+endif()
 
 include(CheckCXXSourceRuns)
 
