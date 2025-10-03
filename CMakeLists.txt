@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Désactiver tests et benchmarks quand utilisé via FetchContent
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     option(BUILD_TESTS "Build tests" ON)
     option(BUILD_BENCHMARKS "Build benchmarks" ON)
@@ -52,6 +51,7 @@ add_library(faster_parser::faster_parser ALIAS faster_parser)
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
     test_cpu_feature("AVX512F" "
+        #include <cstdint>
         #include <immintrin.h>
         int main() {
             const char data[64] = {'0','1','2','3','4','5','6','7'};
@@ -70,6 +70,7 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
     endif()
 
     test_cpu_feature("AVX2" "
+        #include <cstdint>
         #include <immintrin.h>
         int main() {
             const char data[32] = {'0','1','2','3','4','5','6','7'};
@@ -89,6 +90,7 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
     endif()
 
     test_cpu_feature("SSE4.2" "
+        #include <cstdint>
         #include <nmmintrin.h>
         int main() {
             const char data[16] = {'0','1','2','3','4','5','6','7'};
