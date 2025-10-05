@@ -208,25 +208,13 @@ make run_benchmarks_json     # JSON output
 
 ### Typical Results
 
-On Apple M1 Pro:
+| Platform | SIMD | `parse_float` | `strtod` | `std::stod` | Speedup vs strtod | Speedup vs std::stod |
+|----------|------|---------------|----------|-------------|-------------------|----------------------|
+| Apple M1 Pro | NEON | 5.84 ns | 18.4 ns | 30.4 ns | **3.15×** | **5.21×** |
+| Raspberry Pi 5 | NEON | 21.8 ns | 106 ns | 107 ns | **4.86×** | **4.91×** |
+| Intel i9-12900K* | AVX2 | 12.1 ns | 37.9 ns | 38.1 ns | **3.13×** | **3.15×** |
 
-```
-Benchmark                                    Time
--------------------------------------------------------
-bm_fast_float_parser_financial_prices       5.84 ns
-bm_strtod_financial_prices                  18.4 ns
-bm_std_stod_financial_prices                30.4 ns
-bm_fast_float_parser_fixed_8_decimals       5.87 ns
-```
-
-On Raspberry Pi5:
-
-```
-bm_fast_float_parser_financial_prices       21.8 ns
-bm_strtod_financial_prices                   106 ns
-bm_std_stod_financial_prices                 107 ns
-bm_fast_float_parser_fixed_8_decimals       21.8 ns
-```
+\* _Tested with HT off, P-Cores isolated, CPU Governor at Performance, taskset on P-Core_
 
 ## Project Structure
 
