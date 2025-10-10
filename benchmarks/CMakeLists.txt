@@ -43,3 +43,27 @@ add_custom_target(run_binance_future_benchmarks_json
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Running Binance Future parser benchmarks with JSON output..."
 )
+
+# Binance Future Parser Comparison Benchmarks (faster-parser vs simdjson)
+add_executable(binance_future_benchmarks_comparison faster_parser/binance/future_benchmark_comparison.cpp)
+target_link_libraries(binance_future_benchmarks_comparison
+        PRIVATE
+        faster_parser
+        simdjson
+        benchmark::benchmark
+        benchmark::benchmark_main
+)
+
+add_custom_target(run_binance_future_benchmarks_comparison
+        COMMAND $<TARGET_FILE:binance_future_benchmarks_comparison> --benchmark_format=console
+        DEPENDS binance_future_benchmarks_comparison
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Running Binance Future parser comparison benchmarks (faster-parser vs simdjson)..."
+)
+
+add_custom_target(run_binance_future_benchmarks_comparison_json
+        COMMAND $<TARGET_FILE:binance_future_benchmarks_comparison> --benchmark_format=json --benchmark_out=binance_future_comparison_results.json
+        DEPENDS binance_future_benchmarks_comparison
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Running Binance Future parser comparison benchmarks with JSON output..."
+)

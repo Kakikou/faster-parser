@@ -52,6 +52,18 @@ if(BUILD_BENCHMARKS AND NOT TARGET benchmark::benchmark)
         https://github.com/google/benchmark.git
         v1.9.4
     )
+
+    # Fetch simdjson for benchmark comparisons only
+    set(SIMDJSON_JUST_LIBRARY ON CACHE BOOL "" FORCE)
+    set(SIMDJSON_BUILD_STATIC ON CACHE BOOL "" FORCE)
+    set(SIMDJSON_ENABLE_THREADS ON CACHE BOOL "" FORCE)
+    set(SIMDJSON_DEVELOPMENT_CHECKS OFF CACHE BOOL "" FORCE)
+
+    fetch_dependency(
+        simdjson
+        https://github.com/simdjson/simdjson.git
+        v3.11.4
+    )
 endif()
 
 if(BUILD_TESTS OR BUILD_BENCHMARKS)
@@ -61,5 +73,6 @@ if(BUILD_TESTS OR BUILD_BENCHMARKS)
     endif()
     if(BUILD_BENCHMARKS)
         message(STATUS "  - Google Benchmark v1.9.4 (benchmarking)")
+        message(STATUS "  - simdjson v3.11.4 (benchmarking comparison)")
     endif()
 endif()
