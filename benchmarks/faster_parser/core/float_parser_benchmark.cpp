@@ -12,7 +12,7 @@
 #include <vector>
 #include <random>
 
-#include <faster_parser/parsers.h>
+#include <faster_parser/core/fast_scalar_parser.h>
 
 const std::vector<std::string> financial_price_samples = {
     "25.35190000",
@@ -71,7 +71,7 @@ static void bm_fast_float_parser_financial_prices(benchmark::State &state) {
 
     for (auto _: state) {
         const auto &price_str = financial_price_samples[index % financial_price_samples.size()];
-        double result = core::fast_float_parser::parse_float(price_str);
+        double result = core::fast_scalar_parser::parse_float(price_str);
         sum += result;
         ++index;
         benchmark::DoNotOptimize(result);
@@ -117,7 +117,7 @@ static void bm_fast_float_parser_fixed_8_decimals(benchmark::State &state) {
 
     for (auto _: state) {
         const auto &price_str = financial_price_samples[index % financial_price_samples.size()];
-        double result = core::fast_float_parser::parse_float(price_str);
+        double result = core::fast_scalar_parser::parse_float(price_str);
         sum += result;
         ++index;
         benchmark::DoNotOptimize(result);
@@ -132,7 +132,7 @@ static void bm_fast_float_parser_random_data(benchmark::State &state) {
 
     for (auto _: state) {
         const auto &price_str = random_prices[index % random_prices.size()];
-        double result = core::fast_float_parser::parse_float(price_str);
+        double result = core::fast_scalar_parser::parse_float(price_str);
         sum += result;
         ++index;
         benchmark::DoNotOptimize(result);
@@ -178,7 +178,7 @@ static void bm_fast_float_parser_volumes(benchmark::State &state) {
 
     for (auto _: state) {
         const auto &volume_str = volume_samples[index % volume_samples.size()];
-        double result = core::fast_float_parser::parse_float(volume_str);
+        double result = core::fast_scalar_parser::parse_float(volume_str);
         sum += result;
         ++index;
         benchmark::DoNotOptimize(result);
@@ -211,12 +211,12 @@ static void bm_fast_float_parser_mixed_workload(benchmark::State &state) {
     for (auto _: state) {
         if ((price_index + volume_index) % 2 == 0) {
             const auto &price_str = financial_price_samples[price_index % financial_price_samples.size()];
-            double result = core::fast_float_parser::parse_float(price_str);
+            double result = core::fast_scalar_parser::parse_float(price_str);
             sum += result;
             ++price_index;
         } else {
             const auto &volume_str = volume_samples[volume_index % volume_samples.size()];
-            double result = core::fast_float_parser::parse_float(volume_str);
+            double result = core::fast_scalar_parser::parse_float(volume_str);
             sum += result;
             ++volume_index;
         }

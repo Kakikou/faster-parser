@@ -32,8 +32,23 @@ set(SIMD_FLAGS "")
 set(SIMD_DEFINITIONS "")
 
 add_library(faster_parser
-        src/faster_parser/parsers.cpp
-        src/faster_parser/parsers.h
+        src/faster_parser/core/fast_scalar_parser.cpp
+        src/faster_parser/core/fast_scalar_parser.h
+        src/faster_parser/core/avx512/float_parser_avx512.cpp
+        src/faster_parser/core/avx512/float_parser_avx512.h
+        src/faster_parser/core/avx2/float_parser_avx2.cpp
+        src/faster_parser/core/avx2/float_parser_avx2.h
+        src/faster_parser/core/sse42/float_parser_sse42.cpp
+        src/faster_parser/core/sse42/float_parser_sse42.h
+        src/faster_parser/core/neon/float_parser_neon.cpp
+        src/faster_parser/core/neon/float_parser_neon.h
+        src/faster_parser/core/scalar/float_parser_scalar.cpp
+        src/faster_parser/core/scalar/float_parser_scalar.h
+        src/faster_parser/binance/future.h
+        src/faster_parser/binance/neon/utils_neon.h
+        src/faster_parser/binance/scalar/utils_scalar.h
+        src/faster_parser/binance/types/book_ticker.h
+        src/faster_parser/binance/types/level_data.h
 )
 target_include_directories(faster_parser PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
@@ -158,9 +173,10 @@ endif ()
 
 include(GNUInstallDirs)
 
-install(FILES src/faster_parser/parsers.h
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        COMPONENT Development)
+install(DIRECTORY src/faster_parser/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/faster_parser
+        COMPONENT Development
+        FILES_MATCHING PATTERN "*.h")
 
 install(TARGETS faster_parser
         EXPORT faster_parser-targets

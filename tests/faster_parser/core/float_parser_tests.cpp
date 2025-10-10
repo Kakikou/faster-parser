@@ -13,9 +13,9 @@
 #include <vector>
 #include <iomanip>
 
-#include <faster_parser/parsers.h>
+#include <faster_parser/core/fast_scalar_parser.h>
 
-using namespace core::fast_float_parser;
+using namespace core::fast_scalar_parser;
 
 class fast_float_parser_test_t : public ::testing::Test {
 protected:
@@ -45,7 +45,6 @@ TEST_F(fast_float_parser_test_t, ParseDecimals) {
     EXPECT_TRUE(compare_with_strtod("0.0"));
     EXPECT_TRUE(compare_with_strtod("1.5"));
     EXPECT_TRUE(compare_with_strtod("123.456"));
-    // This parser is optimized for 8-decimal financial prices, so 9 decimals has reduced precision
     EXPECT_TRUE(compare_with_strtod("0.123456789", 1e-7));
     EXPECT_TRUE(compare_with_strtod("999.999"));
 }
@@ -111,7 +110,6 @@ TEST_F(fast_float_parser_test_t, ParseLargeNumbers) {
 }
 
 TEST_F(fast_float_parser_test_t, ParseFixed8Decimals) {
-    // Test with the main parse_float function
     double result1 = parse_float("25.35190000");
     double expected1 = 25.35190000;
     EXPECT_TRUE(near_equal(result1, expected1));
@@ -127,7 +125,7 @@ TEST_F(fast_float_parser_test_t, ParseFixed8Decimals) {
 
 TEST_F(fast_float_parser_test_t, ParseWithLength) {
     const char *str = "123.456789GARBAGE";
-    double result = parse_float(std::string_view(str, 10)); // Only parse first 10 characters
+    double result = parse_float(std::string_view(str, 10));
     double expected = 123.456789;
     EXPECT_TRUE(near_equal(result, expected, 1e-6));
 }

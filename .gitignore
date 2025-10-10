@@ -1,0 +1,57 @@
+# Build directories
+build/
+cmake-build-*/
+out/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Testing/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# Executables
+main
+parser_tests
+parser_benchmarks
+*.exe
+*.out
+*.app
+
+# Libraries
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+
+# Object files
+*.o
+*.obj
+
+# Benchmark results
+benchmark_results.json
+*.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Log files
+*.log
