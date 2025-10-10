@@ -11,14 +11,10 @@
 
 #include <cstddef>
 #include <cstring>
-
-#ifdef __aarch64__
 #include <arm_neon.h>
-#endif
 
 namespace core::binance::neon {
     __attribute__((always_inline)) inline bool match_string(const char *ptr, const char *pattern, size_t len) {
-#ifdef __aarch64__
         if (len == 16) {
             uint8x16_t data = vld1q_u8(reinterpret_cast<const uint8_t*>(ptr));
             uint8x16_t pat = vld1q_u8(reinterpret_cast<const uint8_t*>(pattern));
@@ -32,12 +28,10 @@ namespace core::binance::neon {
             uint64_t result = vget_lane_u64(vreinterpret_u64_u8(cmp), 0);
             return result == 0xFFFFFFFFFFFFFFFFULL;
         }
-#endif
         return std::memcmp(ptr, pattern, len) == 0;
     }
 
     __attribute__((always_inline)) inline const char *find_char(const char *ptr, const char *end, char target) {
-#ifdef __aarch64__
         uint8x16_t target_vec = vdupq_n_u8(target);
 
         while (ptr + 16 <= end) {
@@ -60,7 +54,7 @@ namespace core::binance::neon {
             }
             ptr += 16;
         }
-#endif
+
         while (ptr < end) {
             if (*ptr == target) return ptr;
             ptr++;

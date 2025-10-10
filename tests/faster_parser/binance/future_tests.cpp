@@ -53,6 +53,8 @@ TEST_F(binance_future_parser_test_t, ParseValidBookTickerMessage) {
 
     const auto& ticker = listener.book_tickers[0];
 
+    EXPECT_EQ(ticker.symbol, "ASTERUSDT");
+
     EXPECT_DOUBLE_EQ(ticker.bid.price, 1.5822000);
     EXPECT_DOUBLE_EQ(ticker.bid.volume, 457.0);
     EXPECT_DOUBLE_EQ(ticker.ask.price, 1.5823000);
@@ -72,6 +74,8 @@ TEST_F(binance_future_parser_test_t, ParseDifferentPrices) {
     ASSERT_EQ(listener.book_tickers.size(), 1);
 
     const auto& ticker = listener.book_tickers[0];
+
+    EXPECT_EQ(ticker.symbol, "BTCUSDT");
 
     EXPECT_DOUBLE_EQ(ticker.bid.price, 45123.789);
     EXPECT_DOUBLE_EQ(ticker.bid.volume, 10.5);
@@ -140,10 +144,15 @@ TEST_F(binance_future_parser_test_t, ParseMultipleMessages) {
 
     ASSERT_EQ(listener.book_tickers.size(), 3);
 
+    EXPECT_EQ(listener.book_tickers[0].symbol, "A");
     EXPECT_EQ(listener.book_tickers[0].bid.sequence, 1ULL);
     EXPECT_DOUBLE_EQ(listener.book_tickers[0].bid.price, 1.0);
+
+    EXPECT_EQ(listener.book_tickers[1].symbol, "B");
     EXPECT_EQ(listener.book_tickers[1].bid.sequence, 2ULL);
     EXPECT_DOUBLE_EQ(listener.book_tickers[1].bid.price, 2.0);
+
+    EXPECT_EQ(listener.book_tickers[2].symbol, "C");
     EXPECT_EQ(listener.book_tickers[2].bid.sequence, 3ULL);
     EXPECT_DOUBLE_EQ(listener.book_tickers[2].bid.price, 3.0);
 }

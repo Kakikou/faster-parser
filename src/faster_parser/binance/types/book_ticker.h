@@ -10,6 +10,7 @@
 #define FASTER_PARSER_BOOK_TICKER_H
 
 #include <chrono>
+#include <string_view>
 #include "level_data.h"
 
 namespace core::binance::types {
@@ -20,7 +21,7 @@ namespace core::binance::types {
         book_ticker_t& operator=(book_ticker_t const &) = default;
 
         std::chrono::system_clock::time_point time;
-        uint64_t instrument_id;
+        std::string_view symbol;  // Zero-copy reference to original JSON
         uint64_t exchange_timestamp;
         level_data_t bid;
         level_data_t ask;

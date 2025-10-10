@@ -1,22 +1,22 @@
 /**
- * @file book_ticker_neon.h
+ * @file book_ticker_avx2.h
  * @author Kevin Rodrigues
- * @brief 
+ * @brief AVX2 SIMD-optimized Binance book ticker parser
  * @version 1.0
  * @date 10/10/2025
  */
 
-#ifndef FASTER_PARSER_BOOK_TICKER_NEON_H
-#define FASTER_PARSER_BOOK_TICKER_NEON_H
+#ifndef FASTER_PARSER_BOOK_TICKER_AVX2_H
+#define FASTER_PARSER_BOOK_TICKER_AVX2_H
 
 #include <chrono>
 #include <string_view>
 
-#include "faster_parser/binance/neon/utils_neon.h"
+#include "faster_parser/binance/avx2/utils_avx2.h"
 #include "faster_parser/core/fast_scalar_parser.h"
 #include "faster_parser/binance/types/book_ticker.h"
 
-namespace core::binance::neon {
+namespace core::binance::avx2 {
     template<typename listener_t>
     __attribute__((always_inline)) inline bool process_book_ticker(std::chrono::system_clock::time_point const &now, std::string_view raw, listener_t &listener) {
         types::book_ticker_t ticker;
@@ -101,9 +101,10 @@ namespace core::binance::neon {
 
         ticker.bid.sequence = update_id;
         ticker.ask.sequence = update_id;
+
         listener.on_book_ticker(ticker);
         return true;
     }
-}
+} // namespace core::binance::avx2
 
-#endif //FASTER_PARSER_BOOK_TICKER_NEON_H
+#endif //FASTER_PARSER_BOOK_TICKER_AVX2_H

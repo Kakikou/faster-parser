@@ -1,22 +1,22 @@
 /**
- * @file book_ticker_neon.h
+ * @file book_ticker_scalar.h
  * @author Kevin Rodrigues
- * @brief 
+ * @brief Scalar fallback Binance book ticker parser
  * @version 1.0
  * @date 10/10/2025
  */
 
-#ifndef FASTER_PARSER_BOOK_TICKER_NEON_H
-#define FASTER_PARSER_BOOK_TICKER_NEON_H
+#ifndef FASTER_PARSER_BOOK_TICKER_SCALAR_H
+#define FASTER_PARSER_BOOK_TICKER_SCALAR_H
 
 #include <chrono>
 #include <string_view>
 
-#include "faster_parser/binance/neon/utils_neon.h"
+#include "faster_parser/binance/scalar/utils_scalar.h"
 #include "faster_parser/core/fast_scalar_parser.h"
 #include "faster_parser/binance/types/book_ticker.h"
 
-namespace core::binance::neon {
+namespace core::binance::scalar {
     template<typename listener_t>
     __attribute__((always_inline)) inline bool process_book_ticker(std::chrono::system_clock::time_point const &now, std::string_view raw, listener_t &listener) {
         types::book_ticker_t ticker;
@@ -104,6 +104,6 @@ namespace core::binance::neon {
         listener.on_book_ticker(ticker);
         return true;
     }
-}
+} // namespace core::binance::scalar
 
-#endif //FASTER_PARSER_BOOK_TICKER_NEON_H
+#endif //FASTER_PARSER_BOOK_TICKER_SCALAR_H

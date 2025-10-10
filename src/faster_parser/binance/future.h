@@ -12,12 +12,21 @@
 #include <chrono>
 #include <string_view>
 
-#if defined(__aarch64__) || defined(__ARM_NEON)
+#if defined(__AVX512F__)
+#include "avx512/utils_avx512.h"
+#include "avx512/book_ticker_avx512.h"
+namespace impl = core::binance::avx512;
+#elif defined(__AVX2__)
+#include "avx2/utils_avx2.h"
+#include "avx2/book_ticker_avx2.h"
+namespace impl = core::binance::avx2;
+#elif defined(__aarch64__) || defined(__ARM_NEON)
 #include "neon/utils_neon.h"
 #include "neon/book_ticker_neon.h"
 namespace impl = core::binance::neon;
 #else
-#include "scalar/impl_scalar.h"
+#include "scalar/utils_scalar.h"
+#include "scalar/book_ticker_scalar.h"
 namespace impl = core::binance::scalar;
 #endif
 
