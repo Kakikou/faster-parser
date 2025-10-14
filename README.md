@@ -159,13 +159,15 @@ The library exposes a single, powerful function that handles all parsing scenari
 
 #### Performance Comparison:
 
-| Platform         | SIMD | `parse_float` | `strtod` | `std::stod` | Speedup vs strtod | Speedup vs std::stod |
-|------------------|------|---------------|----------|-------------|-------------------|----------------------|
-| Apple M1 Pro     | NEON | 5.84 ns       | 18.4 ns  | 30.4 ns     | **3.15×**         | **5.21×**            |
-| Raspberry Pi 5   | NEON | 21.8 ns       | 106 ns   | 107 ns      | **4.86×**         | **4.91×**            |
-| Intel i9-12900K* | AVX2 | 12.1 ns       | 37.9 ns  | 38.1 ns     | **3.13×**         | **3.15×**            |
+| Platform            | SIMD | `parse_float` | `strtod` | `std::stod` | Speedup vs strtod | Speedup vs std::stod |
+|---------------------|------|---------------|----------|-------------|-------------------|----------------------|
+| Apple M1 Pro        | NEON | 5.84 ns       | 18.4 ns  | 30.4 ns     | **3.15×**         | **5.21×**            |
+| Raspberry Pi 5      | NEON | 21.8 ns       | 106 ns   | 107 ns      | **4.86×**         | **4.91×**            |
+| Intel i9-12900K*    | AVX2 | 12.1 ns       | 37.9 ns  | 38.1 ns     | **3.13×**         | **3.15×**            |
+| Intel Ultra 7 265** | AVX2 | 9.28 ns       | 26.6 ns  | 26.5 ns     | **2,86×**         | **2,86×**            |
 
-\* _Tested with HT off, P-Cores isolated, CPU Governor at Performance, taskset on P-Core_
+\* _Tested with HT off, P-Cores isolated, CPU Governor at Performance, taskset on P-Core_\
+\** _P-Cores isolated, CPU Governor at Performance, taskset on P-Core_
 
 ### Binance Parser
 
@@ -200,15 +202,17 @@ std::cout << "Best ask: " << ticker.best_ask_price << "\n";
 
 Comparison between faster-parser and simdjson for parsing Binance book ticker messages:
 
-| Platform         | SIMD | faster-parser | simdjson | Speedup vs simdjson |
-|------------------|------|---------------|----------|---------------------|
-| Apple M1 Pro     | NEON | 55.6 ns       | 216 ns   | **3.88×**           |
-| Raspberry Pi 5   | NEON | TBD           | TBD      | TBD                 |
-| Intel i9-12900K* | AVX2 | 74.2 ns       | 215 ns   | **2.90×**           |
+| Platform            | SIMD | faster-parser | simdjson | Speedup vs simdjson |
+|---------------------|------|---------------|----------|---------------------|
+| Apple M1 Pro        | NEON | 55.6 ns       | 216 ns   | **3.88×**           |
+| Raspberry Pi 5      | NEON | 155 ns        | 632 ns   | **4.07×**           |
+| Intel i9-12900K*    | AVX2 | 74.2 ns       | 215 ns   | **2.90×**           |
+| Intel Ultra 7 265** | AVX2 | 79.8 ns       | 166 ns   | **2.08×**           |
 
-\* _Tested with HT off, P-Cores isolated, CPU Governor at Performance, taskset on P-Core_
+\* _Tested with HT off, P-Cores isolated, CPU Governor at Performance, taskset on P-Core_\
+\** _P-Cores isolated, CPU Governor at Performance, taskset on P-Core_
 
-**Benchmark**: `BM_faster_parser_mixed_workload` - Parses complete book ticker JSON messages including symbol extraction, price/volume parsing
+**Benchmark**: `bm_faster_parser_mixed_workload` - Parses complete book ticker JSON messages including symbol extraction, price/volume parsing
 
 ## Tests
 
