@@ -13,7 +13,7 @@
 #include <string_view>
 #include "level_data.h"
 
-namespace core::binance::types {
+namespace core::faster_parser::binance::types {
 
     struct book_ticker_t {
         book_ticker_t() = default;
@@ -27,6 +27,6 @@ namespace core::binance::types {
         level_data_t ask;
     };
 
-} // namespace core::binance::types
+} // namespace core::faster_parser::binance::types
 
 #endif //FASTER_PARSER_BOOK_TICKER_H

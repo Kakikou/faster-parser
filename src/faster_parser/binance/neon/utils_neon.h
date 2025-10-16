@@ -13,7 +13,7 @@
 #include <cstring>
 #include <arm_neon.h>
 
-namespace core::binance::neon {
+namespace core::faster_parser::binance::neon {
     __attribute__((always_inline)) inline bool match_string(const char *ptr, const char *pattern, size_t len) {
         if (len == 16) {
             uint8x16_t data = vld1q_u8(reinterpret_cast<const uint8_t*>(ptr));
@@ -61,6 +61,6 @@ namespace core::binance::neon {
         }
         return nullptr;
     }
-} // namespace core::binance::neon
+} // namespace core::faster_parser::binance::neon
 
 #endif // FASTER_PARSER_BINANCE_NEON_UTILS_NEON_H

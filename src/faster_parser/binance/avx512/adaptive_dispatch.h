@@ -17,7 +17,7 @@
 #include "faster_parser/binance/avx2/utils_avx2.h"
 #include "faster_parser/binance/avx2/book_ticker_avx2.h"
 
-namespace core::binance::adaptive {
+namespace core::faster_parser::binance::adaptive {
     constexpr size_t AVX512_THRESHOLD = 512;
 
     template<typename listener_t>
@@ -43,6 +43,6 @@ namespace core::binance::adaptive {
             return avx512::find_char(ptr, end, target);
         }
     }
-} // namespace core::binance::adaptive
+} // core::faster_parser::binance::adaptive
 
 #endif // FASTER_PARSER_ADAPTIVE_DISPATCH_H

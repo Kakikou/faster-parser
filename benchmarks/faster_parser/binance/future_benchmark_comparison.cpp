@@ -14,8 +14,8 @@
 
 #include <faster_parser/binance/future.h>
 
-using namespace core::binance;
-using namespace core::binance::types;
+using namespace core::faster_parser::binance;
+using namespace core::faster_parser::binance::types;
 
 class BenchmarkListener {
 public:

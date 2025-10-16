@@ -12,12 +12,13 @@
 #include <chrono>
 #include <string_view>
 
+#include "faster_parser/binance/concepts.h"
 #include "faster_parser/binance/avx2/utils_avx2.h"
 #include "faster_parser/core/fast_scalar_parser.h"
 #include "faster_parser/binance/types/book_ticker.h"
 
-namespace core::binance::avx2 {
-    template<typename listener_t>
+namespace core::faster_parser::binance::avx2 {
+    template<BinanceFutureListener listener_t>
     __attribute__((always_inline)) inline bool process_book_ticker(std::chrono::system_clock::time_point const &now, std::string_view raw, listener_t &listener) {
         types::book_ticker_t ticker;
         ticker.time = now;
@@ -105,6 +106,6 @@ namespace core::binance::avx2 {
         listener.on_book_ticker(ticker);
         return true;
     }
-} // namespace core::binance::avx2
+} // namespace core::faster_parser::binance::avx2
 
 #endif //FASTER_PARSER_BOOK_TICKER_AVX2_H

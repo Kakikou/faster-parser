@@ -13,7 +13,7 @@
 #include <cstring>
 #include <immintrin.h>
 
-namespace core::binance::avx2 {
+namespace core::faster_parser::binance::avx2 {
     __attribute__((always_inline)) inline bool match_string(const char *ptr, const char *pattern, size_t len) {
         if (len == 16) {
             __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(ptr));
@@ -75,6 +75,6 @@ namespace core::binance::avx2 {
         }
         return nullptr;
     }
-} // namespace core::binance::avx2
+} // namespace core::faster_parser::binance::avx2
 
 #endif // FASTER_PARSER_BINANCE_AVX2_UTILS_AVX2_H

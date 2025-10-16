@@ -11,7 +11,7 @@
 
 #include <cstdint>
 
-namespace core::binance::types {
+namespace core::faster_parser::binance::types {
 
     struct level_data_t {
         level_data_t() = default;
@@ -23,6 +23,6 @@ namespace core::binance::types {
         uint64_t sequence = 0;
     };
 
-} // namespace core::binance::types
+} // namespace core::faster_parser::binance::types
 
 #endif //FASTER_PARSER_LEVEL_DATA_H

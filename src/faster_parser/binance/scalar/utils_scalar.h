@@ -12,7 +12,7 @@
 #include <cstddef>
 #include <cstring>
 
-namespace core::binance::scalar {
+namespace core::faster_parser::binance::scalar {
     __attribute__((always_inline)) inline bool match_string(const char* ptr, const char* pattern, size_t len) {
         return std::memcmp(ptr, pattern, len) == 0;
     }
@@ -24,6 +24,6 @@ namespace core::binance::scalar {
         }
         return nullptr;
     }
-} // namespace core::binance::scalar
+} // namespace core::faster_parser::binance::scalar
 
 #endif // FASTER_PARSER_BINANCE_SCALAR_UTILS_SCALAR_H

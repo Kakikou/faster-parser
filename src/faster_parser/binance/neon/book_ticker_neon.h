@@ -12,14 +12,15 @@
 #include <chrono>
 #include <string_view>
 
+#include "faster_parser/binance/concepts.h"
 #include "faster_parser/binance/neon/utils_neon.h"
 #include "faster_parser/core/fast_scalar_parser.h"
 #include "faster_parser/binance/types/book_ticker.h"
 
-namespace core::binance::neon {
-    template<typename listener_t>
-    __attribute__((always_inline)) inline bool process_book_ticker(std::chrono::system_clock::time_point const &now, std::string_view raw, listener_t &listener) {
-        types::book_ticker_t ticker;
+namespace core::faster_parser::binance::neon {
+    template<BinanceFutureListener listener_t>
+    __attribute__((always_inline)) bool process_book_ticker(std::chrono::system_clock::time_point const &now, std::string_view raw, listener_t &listener) {
+        static types::book_ticker_t ticker;
         ticker.time = now;
 
         const char *ptr = raw.data();
@@ -104,6 +105,6 @@ namespace core::binance::neon {
         listener.on_book_ticker(ticker);
         return true;
     }
-}
+} // namespace core::faster_parser::binance::neon
 
 #endif //FASTER_PARSER_BOOK_TICKER_NEON_H
