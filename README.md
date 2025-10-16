@@ -163,7 +163,6 @@ The library exposes a single, powerful function that handles all parsing scenari
 |---------------------|------|---------------|----------|-------------|-------------------|----------------------|
 | Apple M1 Pro        | NEON | 5.84 ns       | 18.4 ns  | 30.4 ns     | **3.15×**         | **5.21×**            |
 | Raspberry Pi 5      | NEON | 21.8 ns       | 106 ns   | 107 ns      | **4.86×**         | **4.91×**            |
-| Intel i9-12900K*    | AVX2 | 12.1 ns       | 37.9 ns  | 38.1 ns     | **3.13×**         | **3.15×**            |
 | Intel Ultra 7 265** | AVX2 | 9.28 ns       | 26.6 ns  | 26.5 ns     | **2,86×**         | **2,86×**            |
 
 \* _Tested with HT off, P-Cores isolated, CPU Governor at Performance, taskset on P-Core_\
@@ -196,18 +195,18 @@ std::cout << "Best ask: " << ticker.best_ask_price << "\n";
 #### Supported Messages
 
 - ✅ **Book Ticker** (`@bookTicker`): Real-time best bid/ask prices
+- ✅ **Aggregated Trade** (`@aggTrade`): Aggregated trade pushed for fills with same prices
 - 🔄 **Additional message types coming soon**
 
-#### Performance Comparison: Book Ticker Parsing
+#### Performance Comparison
 
-Comparison between faster-parser and simdjson for parsing Binance book ticker messages:
+Comparison between faster-parser and simdjson for parsing Binance messages:
 
 | Platform            | SIMD | faster-parser | simdjson | Speedup vs simdjson |
 |---------------------|------|---------------|----------|---------------------|
-| Apple M1 Pro        | NEON | 55.6 ns       | 216 ns   | **3.88×**           |
-| Raspberry Pi 5      | NEON | 155 ns        | 632 ns   | **4.07×**           |
-| Intel i9-12900K*    | AVX2 | 74.2 ns       | 215 ns   | **2.90×**           |
-| Intel Ultra 7 265** | AVX2 | 79.8 ns       | 166 ns   | **2.08×**           |
+| Apple M1 Pro        | NEON | 57.5 ns       | 194 ns   | **3.37×**           |
+| Raspberry Pi 5      | NEON | TBD           | TBD      | **TBD**             |
+| Intel Ultra 7 265** | AVX2 | 78.6 ns       | 152 ns   | **1.93×**           |
 
 \* _Tested with HT off, P-Cores isolated, CPU Governor at Performance, taskset on P-Core_\
 \** _P-Cores isolated, CPU Governor at Performance, taskset on P-Core_
