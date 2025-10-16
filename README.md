@@ -204,7 +204,7 @@ Comparison between faster-parser and simdjson for parsing Binance messages:
 
 | Platform            | SIMD | faster-parser | simdjson | Speedup vs simdjson |
 |---------------------|------|---------------|----------|---------------------|
-| Apple M1 Pro        | NEON | 57.5 ns       | 194 ns   | **3.37×**           |
+| Apple M1 Pro        | NEON | 56.8 ns       | 192 ns   | **3.38×**           |
 | Raspberry Pi 5      | NEON | TBD           | TBD      | **TBD**             |
 | Intel Ultra 7 265** | AVX2 | 78.6 ns       | 152 ns   | **1.93×**           |
 

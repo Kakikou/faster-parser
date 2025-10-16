@@ -46,12 +46,8 @@ add_library(faster_parser
         src/faster_parser/core/scalar/float_parser_scalar.h
         src/faster_parser/binance/future.h
         src/faster_parser/binance/avx2/utils_avx2.h
-        src/faster_parser/binance/avx2/book_ticker_avx2.h
         src/faster_parser/binance/neon/utils_neon.h
-        src/faster_parser/binance/neon/book_ticker_neon.h
         src/faster_parser/binance/scalar/utils_scalar.h
-        src/faster_parser/binance/scalar/book_ticker_scalar.h
-        src/faster_parser/binance/types/book_ticker.h
         src/faster_parser/binance/types/level_data.h
 )
 target_include_directories(faster_parser PUBLIC
