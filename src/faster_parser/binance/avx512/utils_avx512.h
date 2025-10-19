@@ -88,6 +88,81 @@ namespace core::faster_parser::binance::avx512 {
         }
         return nullptr;
     }
+
+    // Find first occurrence of any character in a set (up to 4 characters)
+    // Returns pointer to the found character and sets which_char to indicate which one was found (0-3)
+    __attribute__((always_inline)) inline const char *find_char_set(const char *ptr, const char *end, const char *targets, size_t num_targets, int &which_char) {
+        while (ptr + 64 <= end) {
+            __m512i data = _mm512_loadu_si512(reinterpret_cast<const __m512i*>(ptr));
+            __mmask64 combined_mask = 0;
+
+            for (size_t i = 0; i < num_targets; ++i) {
+                __m512i target_vec = _mm512_set1_epi8(targets[i]);
+                __mmask64 cmp_mask = _mm512_cmpeq_epi8_mask(data, target_vec);
+
+                if (cmp_mask != 0) {
+                    int offset = __builtin_ctzll(cmp_mask);
+                    which_char = static_cast<int>(i);
+                    return ptr + offset;
+                }
+            }
+
+            ptr += 64;
+        }
+
+        // Fallback for remaining bytes
+        while (ptr < end) {
+            for (size_t i = 0; i < num_targets; ++i) {
+                if (*ptr == targets[i]) {
+                    which_char = static_cast<int>(i);
+                    return ptr;
+                }
+            }
+            ptr++;
+        }
+        return nullptr;
+    }
+
+    // Specialized version for finding either comma or quote
+    __attribute__((always_inline)) inline const char *find_comma_or_quote(const char *ptr, const char *end, bool &is_comma) {
+        __m512i comma_vec = _mm512_set1_epi8(',');
+        __m512i quote_vec = _mm512_set1_epi8('"');
+
+        while (ptr + 64 <= end) {
+            __m512i data = _mm512_loadu_si512(reinterpret_cast<const __m512i*>(ptr));
+            __mmask64 comma_mask = _mm512_cmpeq_epi8_mask(data, comma_vec);
+            __mmask64 quote_mask = _mm512_cmpeq_epi8_mask(data, quote_vec);
+
+            if (comma_mask != 0 || quote_mask != 0) {
+                int comma_offset = comma_mask ? __builtin_ctzll(comma_mask) : 64;
+                int quote_offset = quote_mask ? __builtin_ctzll(quote_mask) : 64;
+
+                if (comma_offset < quote_offset) {
+                    is_comma = true;
+                    return ptr + comma_offset;
+                } else {
+                    is_comma = false;
+                    return ptr + quote_offset;
+                }
+            }
+
+            ptr += 64;
+        }
+
+        // Fallback for remaining bytes
+        while (ptr < end) {
+            if (*ptr == ',') {
+                is_comma = true;
+                return ptr;
+            }
+            if (*ptr == '"') {
+                is_comma = false;
+                return ptr;
+            }
+            ptr++;
+        }
+        return nullptr;
+    }
 } // namespace core::faster_parser::binance::avx512
 
 #endif // FASTER_PARSER_BINANCE_AVX512_UTILS_AVX512_H

@@ -226,13 +226,14 @@ namespace core::faster_parser::binance {
             if (!ptr) return false;
             ptr += 3;
 
-            if (ptr + 4 <= end && std::string_view(ptr, 4) == "true") {
-                trade.is_buyer_maker = true;
-            } else if (ptr + 5 <= end && std::string_view(ptr, 5) == "false") {
-                trade.is_buyer_maker = false;
-            } else {
-                return false;
-            }
+            trade.is_buyer_maker = (*ptr == 't');
+            // if (ptr + 4 <= end && std::string_view(ptr, 4) == "true") {
+                // trade.is_buyer_maker = true;
+            // } else if (ptr + 5 <= end && std::string_view(ptr, 5) == "false") {
+                // trade.is_buyer_maker = false;
+            // } else {
+                // return false;
+            // }
 
             listener.on_agg_trade(trade);
             return true;

@@ -75,6 +75,84 @@ namespace core::faster_parser::binance::avx2 {
         }
         return nullptr;
     }
+
+    // Find first occurrence of any character in a set (up to 4 characters)
+    // Returns pointer to the found character and sets which_char to indicate which one was found (0-3)
+    __attribute__((always_inline)) inline const char *find_char_set(const char *ptr, const char *end, const char *targets, size_t num_targets, int &which_char) {
+        while (ptr + 32 <= end) {
+            __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(ptr));
+
+            for (size_t i = 0; i < num_targets; ++i) {
+                __m256i target_vec = _mm256_set1_epi8(targets[i]);
+                __m256i cmp = _mm256_cmpeq_epi8(data, target_vec);
+                int mask = _mm256_movemask_epi8(cmp);
+
+                if (mask != 0) {
+                    int offset = __builtin_ctz(mask);
+                    which_char = static_cast<int>(i);
+                    return ptr + offset;
+                }
+            }
+
+            ptr += 32;
+        }
+
+        // Fallback for remaining bytes
+        while (ptr < end) {
+            for (size_t i = 0; i < num_targets; ++i) {
+                if (*ptr == targets[i]) {
+                    which_char = static_cast<int>(i);
+                    return ptr;
+                }
+            }
+            ptr++;
+        }
+        return nullptr;
+    }
+
+    // Specialized version for finding either comma or quote
+    __attribute__((always_inline)) inline const char *find_comma_or_quote(const char *ptr, const char *end, bool &is_comma) {
+        __m256i comma_vec = _mm256_set1_epi8(',');
+        __m256i quote_vec = _mm256_set1_epi8('"');
+
+        while (ptr + 32 <= end) {
+            __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(ptr));
+            __m256i comma_cmp = _mm256_cmpeq_epi8(data, comma_vec);
+            __m256i quote_cmp = _mm256_cmpeq_epi8(data, quote_vec);
+
+            int comma_mask = _mm256_movemask_epi8(comma_cmp);
+            int quote_mask = _mm256_movemask_epi8(quote_cmp);
+
+            if (comma_mask != 0 || quote_mask != 0) {
+                int comma_offset = comma_mask ? __builtin_ctz(comma_mask) : 32;
+                int quote_offset = quote_mask ? __builtin_ctz(quote_mask) : 32;
+
+                if (comma_offset < quote_offset) {
+                    is_comma = true;
+                    return ptr + comma_offset;
+                } else {
+                    is_comma = false;
+                    return ptr + quote_offset;
+                }
+            }
+
+            ptr += 32;
+        }
+
+        // Fallback for remaining bytes
+        while (ptr < end) {
+            if (*ptr == ',') {
+                is_comma = true;
+                return ptr;
+            }
+            if (*ptr == '"') {
+                is_comma = false;
+                return ptr;
+            }
+            ptr++;
+        }
+        return nullptr;
+    }
 } // namespace core::faster_parser::binance::avx2
 
 #endif // FASTER_PARSER_BINANCE_AVX2_UTILS_AVX2_H
