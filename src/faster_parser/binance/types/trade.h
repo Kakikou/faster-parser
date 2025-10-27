@@ -14,10 +14,10 @@
 
 namespace core::faster_parser::binance::types {
 
-    struct agg_trade_t {
-        agg_trade_t() = default;
-        agg_trade_t(agg_trade_t const &) = default;
-        agg_trade_t& operator=(agg_trade_t const &) = default;
+    struct trade_t {
+        trade_t() = default;
+        trade_t(trade_t const &) = default;
+        trade_t& operator=(trade_t const &) = default;
 
         std::chrono::system_clock::time_point time;  // Reception time
         std::string_view symbol;                      // Symbol (zero-copy reference)

@@ -19,13 +19,13 @@ using namespace core::faster_parser::binance::types;
 class BenchmarkListener {
 public:
     book_ticker_t last_ticker;
-    agg_trade_t last_trade;
+    trade_t last_trade;
 
     void on_book_ticker(const book_ticker_t& ticker) {
         last_ticker = ticker;
     }
 
-    void on_agg_trade(const agg_trade_t& trade) {
+    void on_trade(const trade_t& trade) {
         last_trade = trade;
     }
 };
@@ -249,7 +249,7 @@ static void bm_binance_future_process_agg_trade(benchmark::State &state) {
     }
 }
 
-static void bm_binance_future_agg_trade_throughput(benchmark::State &state) {
+static void bm_binance_future_trade_throughput(benchmark::State &state) {
     BenchmarkListener listener;
     auto now = std::chrono::system_clock::now();
     size_t messages_processed = 0;
@@ -330,7 +330,7 @@ BENCHMARK(bm_binance_future_parse_agg_trade_btc);
 BENCHMARK(bm_binance_future_parse_agg_trade_small_price);
 BENCHMARK(bm_binance_future_parse_agg_trade_large_quantity);
 BENCHMARK(bm_binance_future_process_agg_trade);
-BENCHMARK(bm_binance_future_agg_trade_throughput);
+BENCHMARK(bm_binance_future_trade_throughput);
 BENCHMARK(bm_binance_future_agg_trade_latency)->UseManualTime();
 
 // Mixed Messages Benchmark

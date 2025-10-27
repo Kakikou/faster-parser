@@ -39,9 +39,10 @@ namespace core::faster_parser::binance {
             }
 
             // Check message type
+            // Only check 16 char to fit the simd
             if (impl::match_string(raw.data(), R"({"e":"bookTicker)", 16)) {
                 return process_book_ticker(now, raw, listener);
-            } else if (impl::match_string(raw.data(), R"({"e":"aggTrade)", 14)) {
+            } else if (impl::match_string(raw.data(), R"({"e":"aggTrade",)", 16)) {
                 return process_agg_trade(now, raw, listener);
             }
 
@@ -141,7 +142,7 @@ namespace core::faster_parser::binance {
         template<BinanceFutureListener listener_t>
         static __attribute__((always_inline)) bool process_agg_trade(std::chrono::system_clock::time_point const &now, std::string_view raw, listener_t &listener) {
             // Message example: {"e":"aggTrade","E":123456789,"s":"BTCUSDT","a":5933014,"p":"0.001","q":"100","f":100,"l":105,"T":123456785,"m":true}
-            types::agg_trade_t trade;
+            types::trade_t trade;
             trade.time = now;
 
             const char *ptr = raw.data();
@@ -235,7 +236,7 @@ namespace core::faster_parser::binance {
                 // return false;
             // }
 
-            listener.on_agg_trade(trade);
+            listener.on_trade(trade);
             return true;
         }
     };

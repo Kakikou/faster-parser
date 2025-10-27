@@ -20,13 +20,13 @@ using namespace core::faster_parser::binance::types;
 class BenchmarkListener {
 public:
     book_ticker_t last_ticker;
-    agg_trade_t last_trade;
+    trade_t last_trade;
 
     void on_book_ticker(const book_ticker_t& ticker) {
         last_ticker = ticker;
     }
 
-    void on_agg_trade(const agg_trade_t& trade) {
+    void on_trade(const trade_t& trade) {
         last_trade = trade;
     }
 };
@@ -153,7 +153,7 @@ static void bm_simdjson_single_message(benchmark::State &state) {
 static void bm_simdjson_mixed_workload(benchmark::State &state) {
     simdjson::ondemand::parser parser;
     book_ticker_t ticker;
-    agg_trade_t trade;
+    trade_t trade;
     auto now = std::chrono::system_clock::now();
     size_t index = 0;
     size_t total_bytes = 0;
@@ -272,7 +272,7 @@ static void bm_faster_parser_agg_trade_single(benchmark::State &state) {
 static void bm_simdjson_agg_trade_single(benchmark::State &state) {
     simdjson::ondemand::parser parser;
     std::string_view message = agg_trade_messages[0];
-    agg_trade_t trade;
+    trade_t trade;
     auto now = std::chrono::system_clock::now();
 
     for (auto _ : state) {
@@ -322,7 +322,7 @@ static void bm_faster_parser_agg_trade_workload(benchmark::State &state) {
 
 static void bm_simdjson_agg_trade_workload(benchmark::State &state) {
     simdjson::ondemand::parser parser;
-    agg_trade_t trade;
+    trade_t trade;
     auto now = std::chrono::system_clock::now();
     size_t index = 0;
     size_t total_bytes = 0;

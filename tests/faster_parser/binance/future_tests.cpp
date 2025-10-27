@@ -20,13 +20,13 @@ using namespace core::faster_parser::binance::types;
 class MockListener {
 public:
     std::vector<book_ticker_t> book_tickers;
-    std::vector<agg_trade_t> agg_trades;
+    std::vector<trade_t> agg_trades;
 
     void on_book_ticker(const book_ticker_t& ticker) {
         book_tickers.push_back(ticker);
     }
 
-    void on_agg_trade(const agg_trade_t& trade) {
+    void on_trade(const trade_t& trade) {
         agg_trades.push_back(trade);
     }
 
