@@ -21,6 +21,7 @@ class MockListener {
 public:
     std::vector<book_ticker_t> book_tickers;
     std::vector<trade_t> agg_trades;
+    std::vector<ticker_t> tickers;
 
     void on_book_ticker(const book_ticker_t& ticker) {
         book_tickers.push_back(ticker);
@@ -30,9 +31,14 @@ public:
         agg_trades.push_back(trade);
     }
 
+    void on_ticker(const ticker_t& ticker) {
+        tickers.push_back(ticker);
+    }
+
     void reset() {
         book_tickers.clear();
         agg_trades.clear();
+        tickers.clear();
     }
 };
 
@@ -404,6 +410,266 @@ TEST_F(binance_future_parser_test_t, ProcessAggTradeDirectly) {
     EXPECT_DOUBLE_EQ(trade.price, 0.45);
     EXPECT_DOUBLE_EQ(trade.quantity, 5000.0);
     EXPECT_FALSE(trade.is_buyer_maker);
+}
+
+// ============================================================================
+// 24hr Ticker Tests
+// ============================================================================
+
+TEST_F(binance_future_parser_test_t, ParseValid24hrTickerMessage) {
+    std::string_view message = R"({"e":"24hrTicker","E":123456789,"s":"BTCUSDT","p":"0.0015","P":"250.00","w":"0.0018","c":"0.0025","Q":"10","o":"0.0010","h":"0.0025","l":"0.0010","v":"10000","q":"18","O":0,"C":86400000,"F":0,"L":18150,"n":18151})";
+
+    bool result = binance_future_parser_t::parse(now(), message, listener);
+
+    EXPECT_TRUE(result);
+    ASSERT_EQ(listener.tickers.size(), 1);
+    EXPECT_EQ(listener.book_tickers.size(), 0);
+    EXPECT_EQ(listener.agg_trades.size(), 0);
+
+    const auto& ticker = listener.tickers[0];
+
+    EXPECT_EQ(ticker.symbol, "BTCUSDT");
+    EXPECT_EQ(ticker.event_time, 123456789ULL);
+    EXPECT_DOUBLE_EQ(ticker.price_change, 0.0015);
+    EXPECT_DOUBLE_EQ(ticker.price_change_percent, 250.00);
+    EXPECT_DOUBLE_EQ(ticker.weighted_avg_price, 0.0018);
+    EXPECT_DOUBLE_EQ(ticker.last_price, 0.0025);
+    EXPECT_DOUBLE_EQ(ticker.last_quantity, 10.0);
+    EXPECT_DOUBLE_EQ(ticker.open_price, 0.0010);
+    EXPECT_DOUBLE_EQ(ticker.high_price, 0.0025);
+    EXPECT_DOUBLE_EQ(ticker.low_price, 0.0010);
+    EXPECT_DOUBLE_EQ(ticker.total_traded_base_volume, 10000.0);
+    EXPECT_DOUBLE_EQ(ticker.total_traded_quote_volume, 18.0);
+    EXPECT_EQ(ticker.statistics_open_time, 0ULL);
+    EXPECT_EQ(ticker.statistics_close_time, 86400000ULL);
+    EXPECT_EQ(ticker.first_trade_id, 0ULL);
+    EXPECT_EQ(ticker.last_trade_id, 18150ULL);
+    EXPECT_EQ(ticker.total_trades, 18151ULL);
+}
+
+TEST_F(binance_future_parser_test_t, ParseTickerWithNormalPrices) {
+    std::string_view message = R"({"e":"24hrTicker","E":1234567890,"s":"ETHUSDT","p":"150.50","P":"4.52","w":"3320.75","c":"3500.50","Q":"25.5","o":"3350.00","h":"3600.00","l":"3300.00","v":"125000.5","q":"415000000.25","O":1234467890,"C":1234567890,"F":1000000,"L":1050000,"n":50001})";
+
+    bool result = binance_future_parser_t::parse(now(), message, listener);
+
+    EXPECT_TRUE(result);
+    ASSERT_EQ(listener.tickers.size(), 1);
+
+    const auto& ticker = listener.tickers[0];
+
+    EXPECT_EQ(ticker.symbol, "ETHUSDT");
+    EXPECT_EQ(ticker.event_time, 1234567890ULL);
+    EXPECT_DOUBLE_EQ(ticker.price_change, 150.50);
+    EXPECT_DOUBLE_EQ(ticker.price_change_percent, 4.52);
+    EXPECT_DOUBLE_EQ(ticker.weighted_avg_price, 3320.75);
+    EXPECT_DOUBLE_EQ(ticker.last_price, 3500.50);
+    EXPECT_DOUBLE_EQ(ticker.last_quantity, 25.5);
+    EXPECT_DOUBLE_EQ(ticker.open_price, 3350.00);
+    EXPECT_DOUBLE_EQ(ticker.high_price, 3600.00);
+    EXPECT_DOUBLE_EQ(ticker.low_price, 3300.00);
+    EXPECT_DOUBLE_EQ(ticker.total_traded_base_volume, 125000.5);
+    EXPECT_DOUBLE_EQ(ticker.total_traded_quote_volume, 415000000.25);
+    EXPECT_EQ(ticker.statistics_open_time, 1234467890ULL);
+    EXPECT_EQ(ticker.statistics_close_time, 1234567890ULL);
+    EXPECT_EQ(ticker.first_trade_id, 1000000ULL);
+    EXPECT_EQ(ticker.last_trade_id, 1050000ULL);
+    EXPECT_EQ(ticker.total_trades, 50001ULL);
+}
+
+TEST_F(binance_future_parser_test_t, ParseTickerWithSmallPrices) {
+    std::string_view message = R"({"e":"24hrTicker","E":999999999,"s":"DOGEUSDT","p":"0.000012","P":"5.50","w":"0.000220","c":"0.000230","Q":"1000000","o":"0.000218","h":"0.000250","l":"0.000200","v":"5000000000","q":"1100000","O":999899999,"C":999999999,"F":5000000,"L":5100000,"n":100001})";
+
+    bool result = binance_future_parser_t::parse(now(), message, listener);
+
+    EXPECT_TRUE(result);
+    ASSERT_EQ(listener.tickers.size(), 1);
+
+    const auto& ticker = listener.tickers[0];
+
+    EXPECT_EQ(ticker.symbol, "DOGEUSDT");
+    EXPECT_DOUBLE_EQ(ticker.price_change, 0.000012);
+    EXPECT_DOUBLE_EQ(ticker.price_change_percent, 5.50);
+    EXPECT_DOUBLE_EQ(ticker.weighted_avg_price, 0.000220);
+    EXPECT_DOUBLE_EQ(ticker.last_price, 0.000230);
+    EXPECT_DOUBLE_EQ(ticker.last_quantity, 1000000.0);
+    EXPECT_DOUBLE_EQ(ticker.open_price, 0.000218);
+    EXPECT_DOUBLE_EQ(ticker.high_price, 0.000250);
+    EXPECT_DOUBLE_EQ(ticker.low_price, 0.000200);
+    EXPECT_DOUBLE_EQ(ticker.total_traded_base_volume, 5000000000.0);
+    EXPECT_DOUBLE_EQ(ticker.total_traded_quote_volume, 1100000.0);
+}
+
+TEST_F(binance_future_parser_test_t, ParseTickerWithNegativePriceChange) {
+    std::string_view message = R"({"e":"24hrTicker","E":888888888,"s":"BNBUSDT","p":"-25.50","P":"-5.12","w":"475.25","c":"472.50","Q":"50","o":"498.00","h":"510.00","l":"470.00","v":"250000","q":"118812500","O":888788888,"C":888888888,"F":2000000,"L":2010000,"n":10001})";
+
+    bool result = binance_future_parser_t::parse(now(), message, listener);
+
+    EXPECT_TRUE(result);
+    ASSERT_EQ(listener.tickers.size(), 1);
+
+    const auto& ticker = listener.tickers[0];
+
+    EXPECT_EQ(ticker.symbol, "BNBUSDT");
+    EXPECT_DOUBLE_EQ(ticker.price_change, -25.50);
+    EXPECT_DOUBLE_EQ(ticker.price_change_percent, -5.12);
+    EXPECT_DOUBLE_EQ(ticker.weighted_avg_price, 475.25);
+    EXPECT_DOUBLE_EQ(ticker.last_price, 472.50);
+    EXPECT_DOUBLE_EQ(ticker.open_price, 498.00);
+}
+
+TEST_F(binance_future_parser_test_t, ParseTickerWithIntegerValues) {
+    std::string_view message = R"({"e":"24hrTicker","E":777777777,"s":"LINKUSDT","p":"2","P":"10","w":"20","c":"22","Q":"100","o":"20","h":"25","l":"19","v":"1000000","q":"21000000","O":777677777,"C":777777777,"F":3000000,"L":3050000,"n":50001})";
+
+    bool result = binance_future_parser_t::parse(now(), message, listener);
+
+    EXPECT_TRUE(result);
+    ASSERT_EQ(listener.tickers.size(), 1);
+
+    const auto& ticker = listener.tickers[0];
+
+    EXPECT_EQ(ticker.symbol, "LINKUSDT");
+    EXPECT_DOUBLE_EQ(ticker.price_change, 2.0);
+    EXPECT_DOUBLE_EQ(ticker.price_change_percent, 10.0);
+    EXPECT_DOUBLE_EQ(ticker.weighted_avg_price, 20.0);
+    EXPECT_DOUBLE_EQ(ticker.last_price, 22.0);
+    EXPECT_DOUBLE_EQ(ticker.last_quantity, 100.0);
+    EXPECT_DOUBLE_EQ(ticker.open_price, 20.0);
+    EXPECT_DOUBLE_EQ(ticker.high_price, 25.0);
+    EXPECT_DOUBLE_EQ(ticker.low_price, 19.0);
+}
+
+TEST_F(binance_future_parser_test_t, ParseTickerWithLargeNumbers) {
+    std::string_view message = R"({"e":"24hrTicker","E":9999999999999,"s":"BTCUSDT","p":"5000.50","P":"12.5","w":"45000.75","c":"50000.50","Q":"1.5","o":"45000.00","h":"51000.00","l":"44000.00","v":"50000.25","q":"2250000000.50","O":9999899999999,"C":9999999999999,"F":18446744073709551600,"L":18446744073709551615,"n":18446744073709551615})";
+
+    bool result = binance_future_parser_t::parse(now(), message, listener);
+
+    EXPECT_TRUE(result);
+    ASSERT_EQ(listener.tickers.size(), 1);
+
+    const auto& ticker = listener.tickers[0];
+
+    EXPECT_EQ(ticker.symbol, "BTCUSDT");
+    EXPECT_EQ(ticker.event_time, 9999999999999ULL);
+    EXPECT_DOUBLE_EQ(ticker.price_change, 5000.50);
+    EXPECT_DOUBLE_EQ(ticker.total_traded_base_volume, 50000.25);
+    EXPECT_DOUBLE_EQ(ticker.total_traded_quote_volume, 2250000000.50);
+    EXPECT_EQ(ticker.first_trade_id, 18446744073709551600ULL);
+    EXPECT_EQ(ticker.last_trade_id, 18446744073709551615ULL);
+    EXPECT_EQ(ticker.total_trades, 18446744073709551615ULL);
+}
+
+TEST_F(binance_future_parser_test_t, ParseTickerWithZeroValues) {
+    std::string_view message = R"({"e":"24hrTicker","E":111111111,"s":"TESTUSDT","p":"0","P":"0","w":"100","c":"100","Q":"0","o":"100","h":"100","l":"100","v":"0","q":"0","O":111011111,"C":111111111,"F":0,"L":0,"n":1})";
+
+    bool result = binance_future_parser_t::parse(now(), message, listener);
+
+    EXPECT_TRUE(result);
+    ASSERT_EQ(listener.tickers.size(), 1);
+
+    const auto& ticker = listener.tickers[0];
+
+    EXPECT_EQ(ticker.symbol, "TESTUSDT");
+    EXPECT_DOUBLE_EQ(ticker.price_change, 0.0);
+    EXPECT_DOUBLE_EQ(ticker.price_change_percent, 0.0);
+    EXPECT_DOUBLE_EQ(ticker.weighted_avg_price, 100.0);
+    EXPECT_DOUBLE_EQ(ticker.last_price, 100.0);
+    EXPECT_DOUBLE_EQ(ticker.last_quantity, 0.0);
+    EXPECT_DOUBLE_EQ(ticker.total_traded_base_volume, 0.0);
+    EXPECT_DOUBLE_EQ(ticker.total_traded_quote_volume, 0.0);
+    EXPECT_EQ(ticker.first_trade_id, 0ULL);
+    EXPECT_EQ(ticker.last_trade_id, 0ULL);
+    EXPECT_EQ(ticker.total_trades, 1ULL);
+}
+
+TEST_F(binance_future_parser_test_t, ParseMultipleTickers) {
+    std::vector<std::string> messages = {
+        R"({"e":"24hrTicker","E":1,"s":"A","p":"1","P":"1","w":"1","c":"1","Q":"1","o":"1","h":"1","l":"1","v":"1","q":"1","O":0,"C":1,"F":0,"L":1,"n":2})",
+        R"({"e":"24hrTicker","E":2,"s":"B","p":"2","P":"2","w":"2","c":"2","Q":"2","o":"2","h":"2","l":"2","v":"2","q":"2","O":0,"C":2,"F":0,"L":2,"n":3})",
+        R"({"e":"24hrTicker","E":3,"s":"C","p":"3","P":"3","w":"3","c":"3","Q":"3","o":"3","h":"3","l":"3","v":"3","q":"3","O":0,"C":3,"F":0,"L":3,"n":4})"
+    };
+
+    for (const auto& msg : messages) {
+        bool result = binance_future_parser_t::parse(now(), msg, listener);
+        EXPECT_TRUE(result);
+    }
+
+    ASSERT_EQ(listener.tickers.size(), 3);
+
+    EXPECT_EQ(listener.tickers[0].symbol, "A");
+    EXPECT_DOUBLE_EQ(listener.tickers[0].price_change, 1.0);
+    EXPECT_EQ(listener.tickers[0].total_trades, 2ULL);
+
+    EXPECT_EQ(listener.tickers[1].symbol, "B");
+    EXPECT_DOUBLE_EQ(listener.tickers[1].price_change, 2.0);
+    EXPECT_EQ(listener.tickers[1].total_trades, 3ULL);
+
+    EXPECT_EQ(listener.tickers[2].symbol, "C");
+    EXPECT_DOUBLE_EQ(listener.tickers[2].price_change, 3.0);
+    EXPECT_EQ(listener.tickers[2].total_trades, 4ULL);
+}
+
+TEST_F(binance_future_parser_test_t, ParseMixedBookTickerAggTradeAndTicker) {
+    std::vector<std::string> messages = {
+        R"({"e":"bookTicker","u":1,"s":"BTCUSDT","b":"50000","B":"1","a":"50001","A":"1","T":1,"E":1})",
+        R"({"e":"24hrTicker","E":2,"s":"ETHUSDT","p":"100","P":"2.5","w":"4000","c":"4100","Q":"10","o":"4000","h":"4150","l":"3950","v":"100000","q":"400000000","O":0,"C":86400000,"F":0,"L":100000,"n":100001})",
+        R"({"e":"aggTrade","E":3,"s":"BNBUSDT","a":3,"p":"500","q":"25","f":3,"l":3,"T":3,"m":true})"
+    };
+
+    for (const auto& msg : messages) {
+        bool result = binance_future_parser_t::parse(now(), msg, listener);
+        EXPECT_TRUE(result);
+    }
+
+    ASSERT_EQ(listener.book_tickers.size(), 1);
+    ASSERT_EQ(listener.tickers.size(), 1);
+    ASSERT_EQ(listener.agg_trades.size(), 1);
+
+    EXPECT_EQ(listener.book_tickers[0].symbol, "BTCUSDT");
+    EXPECT_EQ(listener.tickers[0].symbol, "ETHUSDT");
+    EXPECT_EQ(listener.agg_trades[0].symbol, "BNBUSDT");
+
+    EXPECT_DOUBLE_EQ(listener.tickers[0].price_change, 100.0);
+    EXPECT_DOUBLE_EQ(listener.tickers[0].last_price, 4100.0);
+}
+
+TEST_F(binance_future_parser_test_t, TickerConsistencyTest) {
+    std::string_view message = R"({"e":"24hrTicker","E":123456789,"s":"BTCUSDT","p":"0.0015","P":"250.00","w":"0.0018","c":"0.0025","Q":"10","o":"0.0010","h":"0.0025","l":"0.0010","v":"10000","q":"18","O":0,"C":86400000,"F":0,"L":18150,"n":18151})";
+
+    for (int i = 0; i < 100; ++i) {
+        listener.reset();
+        bool result = binance_future_parser_t::parse(now(), message, listener);
+
+        EXPECT_TRUE(result);
+        ASSERT_EQ(listener.tickers.size(), 1);
+
+        const auto& ticker = listener.tickers[0];
+
+        EXPECT_EQ(ticker.symbol, "BTCUSDT");
+        EXPECT_EQ(ticker.event_time, 123456789ULL);
+        EXPECT_DOUBLE_EQ(ticker.price_change, 0.0015);
+        EXPECT_DOUBLE_EQ(ticker.price_change_percent, 250.00);
+        EXPECT_DOUBLE_EQ(ticker.last_price, 0.0025);
+        EXPECT_EQ(ticker.total_trades, 18151ULL);
+    }
+}
+
+TEST_F(binance_future_parser_test_t, ProcessTickerDirectly) {
+    std::string_view message = R"({"e":"24hrTicker","E":555555555,"s":"ADAUSDT","p":"0.05","P":"8.33","w":"0.6","c":"0.65","Q":"1000","o":"0.60","h":"0.70","l":"0.55","v":"10000000","q":"6000000","O":555455555,"C":555555555,"F":500000,"L":550000,"n":50001})";
+
+    bool result = binance_future_parser_t::process_ticker(now(), message, listener);
+
+    EXPECT_TRUE(result);
+    ASSERT_EQ(listener.tickers.size(), 1);
+
+    const auto& ticker = listener.tickers[0];
+
+    EXPECT_EQ(ticker.symbol, "ADAUSDT");
+    EXPECT_DOUBLE_EQ(ticker.price_change, 0.05);
+    EXPECT_DOUBLE_EQ(ticker.price_change_percent, 8.33);
+    EXPECT_DOUBLE_EQ(ticker.weighted_avg_price, 0.6);
+    EXPECT_DOUBLE_EQ(ticker.last_price, 0.65);
+    EXPECT_DOUBLE_EQ(ticker.last_quantity, 1000.0);
+    EXPECT_EQ(ticker.total_trades, 50001ULL);
 }
 
 int main(int argc, char **argv) {

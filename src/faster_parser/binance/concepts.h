@@ -12,6 +12,7 @@
 #include <concepts>
 
 #include "faster_parser/binance/types/book_ticker.h"
+#include "faster_parser/binance/types/ticker.h"
 #include "faster_parser/binance/types/trade.h"
 
 namespace core::faster_parser::binance {
@@ -23,15 +24,18 @@ namespace core::faster_parser::binance {
      * market data types. Currently supports:
      * - on_book_ticker: for book ticker updates
      * - on_trade: for aggregate trade data
+     * - on_ticker: for 24hr ticker statistics
      *
      * Additional callback methods can be added in the future (e.g., on_depth, on_mark_price).
      */
     template<typename T>
     concept BinanceFutureListener = requires(T &listener,
-                                              const types::book_ticker_t &ticker,
-                                              const types::trade_t &trade)
+                                             const types::book_ticker_t &book_ticker,
+                                             const types::ticker_t &ticker,
+                                             const types::trade_t &trade)
     {
-        { listener.on_book_ticker(ticker) } -> std::same_as<void>;
+        { listener.on_book_ticker(book_ticker) } -> std::same_as<void>;
+        { listener.on_ticker(ticker) } -> std::same_as<void>;
         { listener.on_trade(trade) } -> std::same_as<void>;
     };
 } // namespace core::faster_parser::binance

@@ -44,6 +44,8 @@ namespace core::faster_parser::binance {
                 return process_book_ticker(now, raw, listener);
             } else if (impl::match_string(raw.data(), R"({"e":"aggTrade",)", 16)) {
                 return process_agg_trade(now, raw, listener);
+            } else if (impl::match_string(raw.data(), R"({"e":"24hrTicker)", 16)) {
+                return process_ticker(now, raw, listener);
             }
 
             return false;
@@ -237,6 +239,183 @@ namespace core::faster_parser::binance {
             // }
 
             listener.on_trade(trade);
+            return true;
+        }
+
+        template<BinanceFutureListener listener_t>
+        static __attribute__((always_inline)) bool process_ticker(std::chrono::system_clock::time_point const &now, std::string_view raw, listener_t &listener) {
+            // Message example: {"e":"24hrTicker","E":123456789,"s":"BTCUSDT","p":"0.0015","P":"250.00","w":"0.0018","c":"0.0025","Q":"10","o":"0.0010","h":"0.0025","l":"0.0010","v":"10000","q":"18","O":0,"C":86400000,"F":0,"L":18150,"n":18151}
+            types::ticker_t ticker;
+            ticker.time = now;
+
+            const char *ptr = raw.data();
+            const char *end = raw.data() + raw.size();
+
+            ptr = impl::find_char(ptr, end, 'E');
+            if (!ptr) return false;
+            ptr += 3;
+
+            const char *value_start = ptr;
+            ptr = impl::find_char(ptr, end, ',');
+            if (!ptr) return false;
+            ticker.event_time = fast_scalar_parser::parse_uint64(std::string_view(value_start, ptr - value_start));
+
+            ptr = impl::find_char(ptr, end, 's');
+            if (!ptr) return false;
+            ptr += 4;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, '"');
+            if (!ptr) return false;
+            ticker.symbol = std::string_view(value_start, ptr - value_start);
+            ptr++;
+
+            ptr = impl::find_char(ptr, end, 'p');
+            if (!ptr) return false;
+            ptr += 4;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, '"');
+            if (!ptr) return false;
+            ticker.price_change = fast_scalar_parser::parse_float(std::string_view(value_start, ptr - value_start));
+            ptr++;
+
+            ptr = impl::find_char(ptr, end, 'P');
+            if (!ptr) return false;
+            ptr += 4;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, '"');
+            if (!ptr) return false;
+            ticker.price_change_percent = fast_scalar_parser::parse_float(std::string_view(value_start, ptr - value_start));
+            ptr++;
+
+            ptr = impl::find_char(ptr, end, 'w');
+            if (!ptr) return false;
+            ptr += 4;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, '"');
+            if (!ptr) return false;
+            ticker.weighted_avg_price = fast_scalar_parser::parse_float(std::string_view(value_start, ptr - value_start));
+            ptr++;
+
+            ptr = impl::find_char(ptr, end, 'c');
+            if (!ptr) return false;
+            ptr += 4;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, '"');
+            if (!ptr) return false;
+            ticker.last_price = fast_scalar_parser::parse_float(std::string_view(value_start, ptr - value_start));
+            ptr++;
+
+            ptr = impl::find_char(ptr, end, 'Q');
+            if (!ptr) return false;
+            ptr += 4;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, '"');
+            if (!ptr) return false;
+            ticker.last_quantity = fast_scalar_parser::parse_float(std::string_view(value_start, ptr - value_start));
+            ptr++;
+
+            ptr = impl::find_char(ptr, end, 'o');
+            if (!ptr) return false;
+            ptr += 4;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, '"');
+            if (!ptr) return false;
+            ticker.open_price = fast_scalar_parser::parse_float(std::string_view(value_start, ptr - value_start));
+            ptr++;
+
+            ptr = impl::find_char(ptr, end, 'h');
+            if (!ptr) return false;
+            ptr += 4;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, '"');
+            if (!ptr) return false;
+            ticker.high_price = fast_scalar_parser::parse_float(std::string_view(value_start, ptr - value_start));
+            ptr++;
+
+            ptr = impl::find_char(ptr, end, 'l');
+            if (!ptr) return false;
+            ptr += 4;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, '"');
+            if (!ptr) return false;
+            ticker.low_price = fast_scalar_parser::parse_float(std::string_view(value_start, ptr - value_start));
+            ptr++;
+
+            ptr = impl::find_char(ptr, end, 'v');
+            if (!ptr) return false;
+            ptr += 4;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, '"');
+            if (!ptr) return false;
+            ticker.total_traded_base_volume = fast_scalar_parser::parse_float(std::string_view(value_start, ptr - value_start));
+            ptr++;
+
+            ptr = impl::find_char(ptr, end, 'q');
+            if (!ptr) return false;
+            ptr += 4;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, '"');
+            if (!ptr) return false;
+            ticker.total_traded_quote_volume = fast_scalar_parser::parse_float(std::string_view(value_start, ptr - value_start));
+            ptr++;
+
+            ptr = impl::find_char(ptr, end, 'O');
+            if (!ptr) return false;
+            ptr += 3;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, ',');
+            if (!ptr) return false;
+            ticker.statistics_open_time = fast_scalar_parser::parse_uint64(std::string_view(value_start, ptr - value_start));
+
+            ptr = impl::find_char(ptr, end, 'C');
+            if (!ptr) return false;
+            ptr += 3;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, ',');
+            if (!ptr) return false;
+            ticker.statistics_close_time = fast_scalar_parser::parse_uint64(std::string_view(value_start, ptr - value_start));
+
+            ptr = impl::find_char(ptr, end, 'F');
+            if (!ptr) return false;
+            ptr += 3;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, ',');
+            if (!ptr) return false;
+            ticker.first_trade_id = fast_scalar_parser::parse_uint64(std::string_view(value_start, ptr - value_start));
+
+            ptr = impl::find_char(ptr, end, 'L');
+            if (!ptr) return false;
+            ptr += 3;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, ',');
+            if (!ptr) return false;
+            ticker.last_trade_id = fast_scalar_parser::parse_uint64(std::string_view(value_start, ptr - value_start));
+
+            ptr = impl::find_char(ptr, end, 'n');
+            if (!ptr) return false;
+            ptr += 3;
+
+            value_start = ptr;
+            ptr = impl::find_char(ptr, end, '}');
+            if (!ptr) return false;
+            ticker.total_trades = fast_scalar_parser::parse_uint64(std::string_view(value_start, ptr - value_start));
+
+            listener.on_ticker(ticker);
             return true;
         }
     };

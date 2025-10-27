@@ -196,22 +196,25 @@ std::cout << "Best ask: " << ticker.best_ask_price << "\n";
 
 - ✅ **Book Ticker** (`@bookTicker`): Real-time best bid/ask prices
 - ✅ **Aggregated Trade** (`@aggTrade`): Aggregated trade pushed for fills with same prices
+- ✅ **24hr Ticker** (`@24hrTicker`): 24 hour rolling window ticker statistics
 - 🔄 **Additional message types coming soon**
 
 #### Performance Comparison
 
 Comparison between faster-parser and simdjson for parsing Binance messages:
 
+##### Mixed Workload (bookTicker + aggTrade + 24hrTicker)
+
 | Platform            | SIMD | faster-parser | simdjson | Speedup vs simdjson |
 |---------------------|------|---------------|----------|---------------------|
-| Apple M1 Pro        | NEON | 56.8 ns       | 192 ns   | **3.38×**           |
-| Raspberry Pi 5      | NEON | TBD           | TBD      | **TBD**             |
-| Intel Ultra 7 265** | AVX2 | 78.6 ns       | 152 ns   | **1.93×**           |
+| Apple M1 Pro        | NEON | 82.8 ns       | 303 ns   | **3.65×**           |
+| Raspberry Pi 5      | NEON | 226 ns        | 854 ns   | **3.77×**           |
+| Intel Ultra 7 265** | AVX2 | 102 ns        | 226 ns   | **2.21×**           |
 
 \* _Tested with HT off, P-Cores isolated, CPU Governor at Performance, taskset on P-Core_\
 \** _P-Cores isolated, CPU Governor at Performance, taskset on P-Core_
 
-**Benchmark**: `bm_faster_parser_mixed_workload` - Parses complete book ticker JSON messages including symbol extraction, price/volume parsing
+**Benchmark**: `bm_faster_parser_mixed_workload` - Parses complete JSON messages including symbol extraction, price/volume parsing, and field validation
 
 ## Tests
 
@@ -270,30 +273,57 @@ make run_benchmarks_json     # JSON output
 faster-parser/
 ├── src/
 │   └── faster_parser/
-│       ├── parsers.h                      # Header declarations
-│       └── parsers.cpp                    # Implementation with SIMD optimizations
+│       ├── core/                          # Core float parsing library
+│       │   ├── fast_scalar_parser.h/.cpp  # Scalar float parser (fallback)
+│       │   ├── avx512/                    # AVX-512 optimizations
+│       │   ├── avx2/                      # AVX2 optimizations
+│       │   ├── sse42/                     # SSE4.2 optimizations
+│       │   └── neon/                      # NEON optimizations (ARM64)
+│       └── binance/                       # Binance-specific parsers
+│           ├── future.h                   # Main Binance parser (SIMD-optimized)
+│           ├── concepts.h                 # C++20 concepts for listeners
+│           ├── types/                     # Message type definitions
+│           │   ├── book_ticker.h          # Book ticker structure
+│           │   ├── trade.h                # Aggregate trade structure
+│           │   └── ticker.h               # 24hr ticker structure
+│           ├── avx512/                    # AVX-512 Binance optimizations
+│           ├── avx2/                      # AVX2 Binance optimizations
+│           ├── neon/                      # NEON Binance optimizations
+│           └── scalar/                    # Scalar Binance fallback
 ├── tests/
 │   ├── CMakeLists.txt                     # Test configuration
-│   └── fast_float_parser_tests.cpp       # Test implementation
+│   └── faster_parser/
+│       ├── core/
+│       │   └── float_parser_tests.cpp     # Float parser tests
+│       └── binance/
+│           └── future_tests.cpp           # Binance parser tests (31 tests)
 ├── benchmarks/
 │   ├── CMakeLists.txt                     # Benchmark configuration
-│   └── float_parser_benchmark.cpp        # Benchmark implementation
+│   └── faster_parser/
+│       ├── core/
+│       │   └── float_parser_benchmark.cpp # Float parser benchmarks
+│       └── binance/
+│           ├── future_benchmark.cpp       # Binance parser benchmarks
+│           └── future_benchmark_comparison.cpp  # vs simdjson comparison
+├── example/
+│   ├── CMakeLists.txt                     # Usage examples
+│   ├── example.cpp                        # Float parser example
+│   └── binance_example.cpp                # Binance parser example
 ├── cmake/
 │   └── Dependencies.cmake                 # Centralized dependency management
-├── example/
-│   ├── CMakeLists.txt                     # Usage example
-│   └── example.cpp                        # Example implementation
-├── CMakeLists.txt                         # Main configuration
+├── CMakeLists.txt                         # Main CMake configuration
+├── LICENSE                                # MIT License
 ├── .gitignore                             # Git ignore rules
 └── README.md                              # This file
 ```
 
 ### Key Features
 
+- **Architecture-Optimized**: Automatic SIMD selection (AVX-512/AVX2/SSE4.2/NEON)
 - **Centralized Dependencies**: All FetchContent managed in `cmake/Dependencies.cmake`
 - **Modular Structure**: Clear separation between header, implementation, tests, and benchmarks
 - **Zero-Config**: No manual dependency installation required
-- **Single Compilation**: SIMD code compiled once, fast linking, no template instantiation overhead
+- **Compiled Library**: SIMD code compiled once, fast linking, no template instantiation overhead
 - **Comprehensive Testing**: Full test suite with GoogleTest
 - **Performance Benchmarks**: Detailed benchmarks with Google Benchmark
 
