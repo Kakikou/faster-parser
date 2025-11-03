@@ -1,5 +1,5 @@
 /**
- * @file fast_float_parser_tests.cpp
+ * @file float_parser_tests.cpp
  * @author Kevin Rodrigues
  * @brief Tests for FastFloatParser class
  * @version 1.0
@@ -13,11 +13,11 @@
 #include <vector>
 #include <iomanip>
 
-#include <faster_parser/parsers.h>
+#include <faster_parser/core/fast_scalar_parser.h>
 
-using namespace core::fast_float_parser;
+using namespace core::fast_scalar_parser;
 
-class fast_float_parser_test_t : public ::testing::Test {
+class float_parser_test_t : public ::testing::Test {
 protected:
     void SetUp() override {
     }
@@ -27,13 +27,13 @@ protected:
     }
 
     bool compare_with_strtod(const char *str, double tolerance = 1e-8) {
-        double fast_result = parse_float(str);
+        double result = parse_float(str);
         double std_result = strtod(str, nullptr);
-        return near_equal(fast_result, std_result, tolerance);
+        return near_equal(result, std_result, tolerance);
     }
 };
 
-TEST_F(fast_float_parser_test_t, ParseIntegers) {
+TEST_F(float_parser_test_t, ParseIntegers) {
     EXPECT_TRUE(compare_with_strtod("0"));
     EXPECT_TRUE(compare_with_strtod("1"));
     EXPECT_TRUE(compare_with_strtod("123"));
@@ -41,16 +41,15 @@ TEST_F(fast_float_parser_test_t, ParseIntegers) {
     EXPECT_TRUE(compare_with_strtod("1000000"));
 }
 
-TEST_F(fast_float_parser_test_t, ParseDecimals) {
+TEST_F(float_parser_test_t, ParseDecimals) {
     EXPECT_TRUE(compare_with_strtod("0.0"));
     EXPECT_TRUE(compare_with_strtod("1.5"));
     EXPECT_TRUE(compare_with_strtod("123.456"));
-    // This parser is optimized for 8-decimal financial prices, so 9 decimals has reduced precision
     EXPECT_TRUE(compare_with_strtod("0.123456789", 1e-7));
     EXPECT_TRUE(compare_with_strtod("999.999"));
 }
 
-TEST_F(fast_float_parser_test_t, ParseFinancialPrices) {
+TEST_F(float_parser_test_t, ParseFinancialPrices) {
     EXPECT_TRUE(compare_with_strtod("25.35190000"));
     EXPECT_TRUE(compare_with_strtod("0.00001234"));
     EXPECT_TRUE(compare_with_strtod("67890.12345678"));
@@ -62,7 +61,7 @@ TEST_F(fast_float_parser_test_t, ParseFinancialPrices) {
     EXPECT_TRUE(compare_with_strtod("999999.99999999"));
 }
 
-TEST_F(fast_float_parser_test_t, ParseNegativeNumbers) {
+TEST_F(float_parser_test_t, ParseNegativeNumbers) {
     EXPECT_TRUE(compare_with_strtod("-1"));
     EXPECT_TRUE(compare_with_strtod("-123.456"));
     EXPECT_TRUE(compare_with_strtod("-0.123"));
@@ -70,14 +69,14 @@ TEST_F(fast_float_parser_test_t, ParseNegativeNumbers) {
     EXPECT_TRUE(compare_with_strtod("-0.00000001"));
 }
 
-TEST_F(fast_float_parser_test_t, ParsePositiveSign) {
+TEST_F(float_parser_test_t, ParsePositiveSign) {
     EXPECT_TRUE(compare_with_strtod("+1"));
     EXPECT_TRUE(compare_with_strtod("+123.456"));
     EXPECT_TRUE(compare_with_strtod("+0.123"));
     EXPECT_TRUE(compare_with_strtod("+999.99999999"));
 }
 
-TEST_F(fast_float_parser_test_t, ParseEdgeCases) {
+TEST_F(float_parser_test_t, ParseEdgeCases) {
     EXPECT_TRUE(compare_with_strtod("0.0"));
     EXPECT_TRUE(compare_with_strtod("0.00000000"));
     EXPECT_TRUE(compare_with_strtod("1.0"));
@@ -89,29 +88,28 @@ TEST_F(fast_float_parser_test_t, ParseEdgeCases) {
     EXPECT_TRUE(compare_with_strtod("1000000.0"));
 }
 
-TEST_F(fast_float_parser_test_t, ParseTrailingZeros) {
+TEST_F(float_parser_test_t, ParseTrailingZeros) {
     EXPECT_TRUE(compare_with_strtod("123.45000000"));
     EXPECT_TRUE(compare_with_strtod("100.10000000"));
     EXPECT_TRUE(compare_with_strtod("0.10000000"));
     EXPECT_TRUE(compare_with_strtod("1.00100000"));
 }
 
-TEST_F(fast_float_parser_test_t, ParseVerySmallNumbers) {
+TEST_F(float_parser_test_t, ParseVerySmallNumbers) {
     EXPECT_TRUE(compare_with_strtod("0.00000001"));
     EXPECT_TRUE(compare_with_strtod("0.00000123"));
     EXPECT_TRUE(compare_with_strtod("0.00012345"));
     EXPECT_TRUE(compare_with_strtod("0.01234567"));
 }
 
-TEST_F(fast_float_parser_test_t, ParseLargeNumbers) {
+TEST_F(float_parser_test_t, ParseLargeNumbers) {
     EXPECT_TRUE(compare_with_strtod("12345678.12345678"));
     EXPECT_TRUE(compare_with_strtod("99999999.99999999"));
     EXPECT_TRUE(compare_with_strtod("1000000.0"));
     EXPECT_TRUE(compare_with_strtod("9999999.0"));
 }
 
-TEST_F(fast_float_parser_test_t, ParseFixed8Decimals) {
-    // Test with the main parse_float function
+TEST_F(float_parser_test_t, ParseFixed8Decimals) {
     double result1 = parse_float("25.35190000");
     double expected1 = 25.35190000;
     EXPECT_TRUE(near_equal(result1, expected1));
@@ -125,14 +123,14 @@ TEST_F(fast_float_parser_test_t, ParseFixed8Decimals) {
     EXPECT_TRUE(near_equal(result3, expected3));
 }
 
-TEST_F(fast_float_parser_test_t, ParseWithLength) {
+TEST_F(float_parser_test_t, ParseWithLength) {
     const char *str = "123.456789GARBAGE";
-    double result = parse_float(std::string_view(str, 10)); // Only parse first 10 characters
+    double result = parse_float(std::string_view(str, 10));
     double expected = 123.456789;
     EXPECT_TRUE(near_equal(result, expected, 1e-6));
 }
 
-TEST_F(fast_float_parser_test_t, PrecisionPreservation) {
+TEST_F(float_parser_test_t, PrecisionPreservation) {
     struct TestCase {
         const char *input;
         double expected;
@@ -159,7 +157,7 @@ TEST_F(fast_float_parser_test_t, PrecisionPreservation) {
     }
 }
 
-TEST_F(fast_float_parser_test_t, BoundaryCases) {
+TEST_F(float_parser_test_t, BoundaryCases) {
     EXPECT_TRUE(compare_with_strtod("0"));
     EXPECT_TRUE(compare_with_strtod("0.0"));
     EXPECT_TRUE(compare_with_strtod("-0"));
@@ -176,7 +174,7 @@ TEST_F(fast_float_parser_test_t, BoundaryCases) {
     }
 }
 
-TEST_F(fast_float_parser_test_t, PerformanceValidation) {
+TEST_F(float_parser_test_t, PerformanceValidation) {
     std::vector<std::string> test_values = {
         "25.35190000",
         "0.00001234",
@@ -194,7 +192,7 @@ TEST_F(fast_float_parser_test_t, PerformanceValidation) {
     }
 }
 
-TEST_F(fast_float_parser_test_t, ConsistencyTest) {
+TEST_F(float_parser_test_t, ConsistencyTest) {
     const char *test_value = "123.45678900";
     double first_result = parse_float(test_value);
 
@@ -205,7 +203,7 @@ TEST_F(fast_float_parser_test_t, ConsistencyTest) {
     }
 }
 
-TEST_F(fast_float_parser_test_t, SIMDvsScalarConsistency) {
+TEST_F(float_parser_test_t, SIMDvsScalarConsistency) {
     std::vector<std::string> test_cases = {
         "12345678.90123456",
         "87654321.09876543",
@@ -223,15 +221,15 @@ TEST_F(fast_float_parser_test_t, SIMDvsScalarConsistency) {
     }
 }
 
-TEST_F(fast_float_parser_test_t, StandardParseFallback) {
+TEST_F(float_parser_test_t, StandardParseFallback) {
     const char *test_value = "123.456";
-    double fast_result = parse_float(test_value);
+    double result = parse_float(test_value);
     double standard_result = std::strtod(test_value, nullptr);
 
-    EXPECT_TRUE(near_equal(fast_result, standard_result, 1e-12));
+    EXPECT_TRUE(near_equal(result, standard_result, 1e-12));
 }
 
-TEST_F(fast_float_parser_test_t, MemorySafety) {
+TEST_F(float_parser_test_t, MemorySafety) {
     std::vector<std::string> test_strings = {
         "1",
         "12",
