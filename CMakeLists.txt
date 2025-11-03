@@ -48,7 +48,6 @@ add_library(faster_parser
         src/faster_parser/binance/avx2/utils_avx2.h
         src/faster_parser/binance/neon/utils_neon.h
         src/faster_parser/binance/scalar/utils_scalar.h
-        src/faster_parser/binance/types/level_data.h
 )
 target_include_directories(faster_parser PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
